@@ -1,0 +1,22 @@
+{
+  "name": "warbler",
+  "version": "1.0.0",
+  "description": "cassette tape emulation inside the browser",
+  "main": "host.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jurelik/warbler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jurelik/warbler/issues"
+  },
+  "homepage": "https://github.com/jurelik/warbler#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
