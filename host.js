@@ -19,10 +19,13 @@ server.get('/download/:id', (req, res) => {
   YD.download(id, `${id}.mp3`);
   YD.on('finished', (err, data) => {
     console.log('file downloaded');
-    res.end('sup');
+    res.end();
   });
+})
 
-  // send(req, `public/downloads/${id}.mp3`).pipe(res);
+server.get('/stream/:id', (req, res) => {
+  const id = req.params.id;
+  send(req, `public/downloads/${id}.mp3`).pipe(res);
 })
 
 server.listen(3000, () => {
