@@ -7,18 +7,21 @@ class Tape {
     this.revBuffer;
   }
 
-  load() {
-    fetch(`http://localhost:3000/download/`)
+  load(id) {
+    fetch(`http://localhost:3000/download/${id}`)
     .then(res => {
-      return res.arrayBuffer();
+      console.log(res);
     })
-    .then(res => {
-      context.decodeAudioData(res, decoded => {
-        this.buffer = decoded;
-        console.log('audio decoded');
-        console.log(this.buffer);
-      });
-    })
+    // .then(res => {
+    //   return res.arrayBuffer();
+    // })
+    // .then(res => {
+    //   context.decodeAudioData(res, decoded => {
+    //     this.buffer = decoded;
+    //     console.log('audio decoded');
+    //     console.log(this.buffer);
+    //   });
+    // })
     .catch(err => {
       console.log(err);
     });
