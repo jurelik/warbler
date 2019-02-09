@@ -10,24 +10,31 @@ class Tape {
   load(id) {
     fetch(`http://localhost:3000/download/${id}`)
     .then(() => {
-      fetch(`http://localhost:3000/stream/${id}`)
-      .then(res => {
-        return res.arrayBuffer();
-      })
-      .then(res => {
-        context.decodeAudioData(res, decoded => {
-          this.buffer = decoded;
-          console.log('audio decoded');
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
+      console.log('done');
     })
-    .catch(err => {
-      console.log(err);
-    });
   }
+
+  // load(id) {
+  //   fetch(`http://localhost:3000/download/${id}`)
+  //   .then(() => {
+  //     fetch(`http://localhost:3000/stream/${id}`)
+  //     .then(res => {
+  //       return res.arrayBuffer();
+  //     })
+  //     .then(res => {
+  //       context.decodeAudioData(res, decoded => {
+  //         this.buffer = decoded;
+  //         console.log('audio decoded');
+  //       });
+  //     })
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  //   })
+  //   .catch(err => {
+  //     console.log(err);
+  //   });
+  // }
 }
 
 let tape = new Tape();

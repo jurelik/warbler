@@ -1,27 +1,32 @@
 const fs = require('fs');
 const express = require('express');
 const send = require('send');
-const ytmp3 = require('youtube-mp3-downloader');
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
+
+ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
 
 const server = express();
-const YD = new ytmp3({
-  'ffmpegPath': '/usr/local/bin/ffmpeg',
-  'outputPath': 'public/downloads',
-  'youtubeVideoQuality': 'highest'
-});
 
 server.use(express.static('./public'));
 
 server.get('/download/:id', (req, res) => {
-  console.log('request made');
   const id = req.params.id;
+  let stream = ytdl(`https://www.youtube.com/watch?v=${id}`);
 
-  YD.download(id, `${id}.mp3`);
-  YD.on('finished', (err, data) => {
-    console.log('file downloaded');
-    res.end();
-  });
-})
+  ffmpeg(stream)
+    .audioCodec('libmp3lame')
+    .audioBitrate(128)
+    .toFormat('mp3')
+    .save(`public/downloads/${id}.mp3`)
+    .on('error', err => {
+      console.log(err);
+    })
+    .on('end', () => {
+      console.log('file downloaded');
+      res.end();
+    });
+});
 
 server.get('/stream/:id', (req, res) => {
   const id = req.params.id;
