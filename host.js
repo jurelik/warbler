@@ -24,14 +24,9 @@ server.get('/download/:id', (req, res) => {
     })
     .on('end', () => {
       console.log('file downloaded');
-      res.end();
+      send(req, `public/downloads/${id}.mp3`).pipe(res);
     });
 });
-
-server.get('/stream/:id', (req, res) => {
-  const id = req.params.id;
-  send(req, `public/downloads/${id}.mp3`).pipe(res);
-})
 
 server.listen(3000, () => {
   console.log('listening to 3000');
