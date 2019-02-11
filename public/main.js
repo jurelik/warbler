@@ -26,6 +26,10 @@ class Tape {
     source.connect(context.destination);
     source.start();
   }
+
+  test() {
+    fetch(`http://localhost:3000/test`)
+  }
 }
 
 let tape = new Tape();

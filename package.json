@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jurelik/warbler#readme",
   "dependencies": {
+    "async": "^2.6.1",
     "express": "^4.16.4",
     "send": "^0.16.2",
     "youtube-mp3-downloader": "^0.5.3"

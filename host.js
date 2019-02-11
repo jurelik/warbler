@@ -1,4 +1,4 @@
-const fs = require('fs');
+const async = require('async');
 const express = require('express');
 const send = require('send');
 const ytdl = require('ytdl-core');
@@ -9,6 +9,20 @@ ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
 const server = express();
 
 server.use(express.static('./public'));
+
+let queue = async.queue((task, callback) => {
+  setTimeout(() => {
+    console.log('done!');
+    callback();
+  }, 1000);
+}, 2);
+
+server.get('/test', (req, res) => {
+  queue.push({name: req.params.id}, err => {
+    console.log(err);
+  });
+  res.end();
+})
 
 server.get('/download/:id', (req, res) => {
   const id = req.params.id;
