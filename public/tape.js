@@ -49,9 +49,11 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
-  test() {
-    this.load('1w7OgIMMRc4');
+  test1() {
     this.load('o1tj2zJ2Wvg');
+  }
+
+  test2() {
     this.load('Rbm6GXllBiw');
   }
 }
