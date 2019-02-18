@@ -7,6 +7,8 @@ class Tape {
     this.currentPosition = 0;
     this.startTime;
 
+    //DOM Objects
+
     this.playBtn = document.getElementById('play-pause');
     this.playBtnIcon = document.getElementById('play-pause-icon');
     this.playBtn.addEventListener('click', () => {
@@ -21,7 +23,21 @@ class Tape {
         this.playBtnIcon.className = "fas fa-play";
       }
     });
+
+    this.forwardBtn = document.getElementById('forward');
+    this.forwardBtn.addEventListener('mousedown', () => {
+      if (this.playing) {
+        this.source.playbackRate.value = 2;
+      }
+    });
+    this.forwardBtn.addEventListener('mouseup', () => {
+      if (this.playing) {
+        this.source.playbackRate.value = 1;
+      }
+    })
   }
+
+  //METHODS
 
   load(id) {
     fetch(`http://localhost:3000/download/${id}`)
@@ -47,13 +63,5 @@ class Tape {
   pause() {
     this.source.stop();
     this.currentPosition += context.currentTime - this.startTime;
-  }
-
-  test1() {
-    this.load('o1tj2zJ2Wvg');
-  }
-
-  test2() {
-    this.load('Rbm6GXllBiw');
   }
 }
