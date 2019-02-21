@@ -27,12 +27,16 @@ class Tape {
     this.forwardBtn = document.getElementById('forward');
     this.forwardBtn.addEventListener('mousedown', () => {
       if (this.playing) {
+        this.updatePosition(); //Updates the position until this moment
         this.source.playbackRate.value = 2;
+        this.mouseDownTime = context.currentTime;
       }
     });
     this.forwardBtn.addEventListener('mouseup', () => {
       if (this.playing) {
+        this.startTime = context.currentTime;
         this.source.playbackRate.value = 1;
+        this.currentPosition += (context.currentTime - this.mouseDownTime) * 2; //Updates the position after the fast forward
       }
     })
   }
@@ -58,10 +62,17 @@ class Tape {
     this.source.connect(context.destination);
     this.source.start(context.currentTime, this.currentPosition);
     this.startTime = context.currentTime;
+    console.log('current position:' + this.currentPosition);
   }
 
   pause() {
     this.source.stop();
+    this.updatePosition();
+    console.log(this.currentPosition);
+  }
+
+  //Responsible for updating the global currentPosition value, needed to track position in song
+  updatePosition() {
     this.currentPosition += context.currentTime - this.startTime;
   }
 }
