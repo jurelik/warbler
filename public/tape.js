@@ -1,19 +1,23 @@
 class Tape {
   constructor() {
     this.buffer;
-    this.source;
     this.revBuffer;
+    this.source;
     this.playing = false;
+    this.duration;
     this.currentPosition = 0;
     this.startTime;
 
-    //DOM Objects
+    //
+    //DOM OBJECTS
+    //
 
+    //Play Button
     this.playBtn = document.getElementById('play-pause');
     this.playBtnIcon = document.getElementById('play-pause-icon');
     this.playBtn.addEventListener('click', () => {
       if(!this.playing) {
-        this.play();
+        this.play(this.buffer);
         this.playing = true;
         this.playBtnIcon.className = "fas fa-pause";
       }
@@ -24,11 +28,12 @@ class Tape {
       }
     });
 
+    //Forward Button
     this.forwardBtn = document.getElementById('forward');
     this.forwardBtn.addEventListener('mousedown', () => {
       if (this.playing) {
         this.updatePosition(); //Updates the position until this moment
-        this.source.playbackRate.value = 2;
+        this.source.playbackRate.value = 1.5;
         this.mouseDownTime = context.currentTime;
       }
     });
@@ -36,12 +41,33 @@ class Tape {
       if (this.playing) {
         this.startTime = context.currentTime;
         this.source.playbackRate.value = 1;
-        this.currentPosition += (context.currentTime - this.mouseDownTime) * 2; //Updates the position after the fast forward
+        this.currentPosition += (context.currentTime - this.mouseDownTime) * 1.5; //Updates the position after the fast forward
       }
-    })
+    });
+
+    //Rewind Button
+    this.rewindBtn = document.getElementById('rewind');
+    this.rewindBtn.addEventListener('mousedown', () => {
+      if (this.playing) {
+        this.source.stop();
+        this.updatePosition(); //Updates the position until this moment
+        this.play(this.revBuffer);
+        this.source.playbackRate.value = 1.5;
+        this.mouseDownTime = context.currentTime;
+      }
+    });
+    this.rewindBtn.addEventListener('mouseup', () => {
+      if(this.playing) {
+        this.source.stop();
+        this.currentPosition -= (context.currentTime - this.mouseDownTime) * 1.5; //Updates the position until this moment
+        this.play(this.buffer);
+      }
+    });
   }
 
+  //
   //METHODS
+  //
 
   load(id) {
     fetch(`http://localhost:3000/download/${id}`)
@@ -49,20 +75,38 @@ class Tape {
       return res.arrayBuffer();
     })
     .then(res => {
+      let reverse = res.slice(); //Making a copy of the array buffer in order to store a reverse version
       context.decodeAudioData(res, decoded => {
         this.buffer = decoded;
+        this.duration = this.buffer.duration;
         console.log('download complete');
-      })
-    })
+      });
+      context.decodeAudioData(reverse, decoded => { //Decode and reverse channel data
+        this.revBuffer = decoded;
+        this.revBuffer.getChannelData(0).reverse();
+        this.revBuffer.getChannelData(1).reverse();
+      });
+    });
   }
 
-  play() {
-    this.source = context.createBufferSource();
-    this.source.buffer = this.buffer;
-    this.source.connect(context.destination);
-    this.source.start(context.currentTime, this.currentPosition);
-    this.startTime = context.currentTime;
+  play(buffer) {
+    if (buffer === this.buffer) { //If playing forward
+      this.source = context.createBufferSource();
+      this.source.buffer = buffer;
+      this.source.connect(context.destination);
+      this.source.start(context.currentTime, this.currentPosition);
+      this.startTime = context.currentTime;
     console.log('current position:' + this.currentPosition);
+    }
+    else if (buffer === this.revBuffer) { //If playing backwards
+      this.source = context.createBufferSource();
+      this.source.buffer = buffer;
+      this.source.connect(context.destination);
+      this.source.start(context.currentTime, this.duration - this.currentPosition);
+    }
+    else {
+      console.log('Error: No buffer found in the play method');
+    }
   }
 
   pause() {
