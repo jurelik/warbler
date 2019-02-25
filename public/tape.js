@@ -6,7 +6,9 @@ class Tape {
     this.playing = false;
     this.duration;
     this.currentPosition = 0;
+    this.currentPlaybackRate = 1;
     this.startTime;
+    this.warbleOn = false;
 
     //
     //DOM OBJECTS
@@ -36,12 +38,14 @@ class Tape {
     this.forwardBtn.addEventListener('mousedown', () => {
       if (this.playing && this.buffer != null) { //If song is playing
         this.updatePosition(); //Updates the position until this moment
-        this.source.playbackRate.value = 1.5;
+        this.currentPlaybackRate = 1.5;
+        this.source.playbackRate.value = this.currentPlaybackRate;
         this.mouseDownTime = context.currentTime;
       }
       else if (!this.playing && this.buffer != null) { //If song is not playing
         this.play(this.buffer);
-        this.source.playbackRate.value = 1.5;
+        this.currentPlaybackRate = 1.5;
+        this.source.playbackRate.value = this.currentPlaybackRate;
         this.mouseDownTime = context.currentTime;
       }
       else { //If no song is loaded
@@ -51,11 +55,13 @@ class Tape {
     this.forwardBtn.addEventListener('mouseup', () => {
       if (this.playing && this.buffer != null) { //If song is playing
         this.startTime = context.currentTime;
-        this.source.playbackRate.value = 1;
+        this.currentPlaybackRate = 1;
+        this.source.playbackRate.value = this.currentPlaybackRate;
         this.currentPosition += (context.currentTime - this.mouseDownTime) * 1.5; //Updates the position after the fast forward
       }
       else if (!this.playing && this.buffer != null) { //If song is not playing
         this.source.stop();
+        clearTimeout(this.warbleTimeout);
         this.currentPosition += (context.currentTime - this.mouseDownTime) * 1.5;
       }
       else { //If no song is loaded
@@ -68,14 +74,17 @@ class Tape {
     this.rewindBtn.addEventListener('mousedown', () => {
       if (this.playing && this.buffer != null) { //If song is playing
         this.source.stop();
+        clearTimeout(this.warbleTimeout);
         this.updatePosition(); //Updates the position until this moment
         this.play(this.revBuffer);
-        this.source.playbackRate.value = 1.5;
+        this.currentPlaybackRate = 1.5;
+        this.source.playbackRate.value = this.currentPlaybackRate;
         this.mouseDownTime = context.currentTime;
       }
       else if (!this.playing && this.buffer != null) { //If song is not playing
         this.play(this.revBuffer);
-        this.source.playbackRate.value = 1.5;
+        this.currentPlaybackRate = 1.5;
+        this.source.playbackRate.value = this.currentPlaybackRate;
         this.mouseDownTime = context.currentTime;
       }
       else { //If no song is loaded
@@ -148,9 +157,12 @@ class Tape {
     if (buffer === this.buffer) { //If playing forward
       this.source = context.createBufferSource();
       this.source.buffer = buffer;
+      this.currentPlaybackRate = 1;
+      this.source.playbackRate.value = this.currentPlaybackRate;
       this.source.connect(context.destination);
       this.source.start(context.currentTime, this.currentPosition);
       this.startTime = context.currentTime;
+      this.warble();
     console.log('current position:' + this.currentPosition);
     }
     else if (buffer === this.revBuffer) { //If playing backwards
@@ -166,6 +178,7 @@ class Tape {
 
   pause() {
     this.source.stop();
+    clearTimeout(this.warbleTimeout);
     this.updatePosition();
     console.log(this.currentPosition);
   }
@@ -173,5 +186,22 @@ class Tape {
   //Responsible for updating the global currentPosition value, needed to track position in song
   updatePosition() {
     this.currentPosition += context.currentTime - this.startTime;
+  }
+
+  warble() {
+    this.warbleTimeout = setTimeout(() => {
+      if (this.warbleOn) {
+        this.source.playbackRate.value = this.currentPlaybackRate + 0.04;
+        this.warbleOn = false;
+        this.warble();
+        console.log('sup');
+      }
+      else {
+        this.source.playbackRate.value = this.currentPlaybackRate;
+        this.warbleOn = true;
+        this.warble()
+        console.log('yo');
+      }
+    }, 50);
   }
 }
