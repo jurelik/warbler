@@ -8,7 +8,9 @@ class Tape {
     this.currentPosition = 0;
     this.currentPlaybackRate = 1;
     this.startTime;
-    this.warbleOn = false;
+    this.warbleCycle = false;
+    this.warbleDepth = 0.02;
+    this.warbleSpeed = 50;
 
     //
     //DOM OBJECTS
@@ -190,18 +192,18 @@ class Tape {
 
   warble() {
     this.warbleTimeout = setTimeout(() => {
-      if (this.warbleOn) {
-        this.source.playbackRate.value = this.currentPlaybackRate + 0.04;
-        this.warbleOn = false;
+      if (this.warbleCycle) { 
+        this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
+        this.warbleCycle = false;
         this.warble();
         console.log('sup');
       }
       else {
-        this.source.playbackRate.value = this.currentPlaybackRate;
-        this.warbleOn = true;
-        this.warble()
+        this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
+        this.warbleCycle = true;
+        this.warble();
         console.log('yo');
       }
-    }, 50);
+    }, this.warbleSpeed);
   }
 }
