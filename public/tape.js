@@ -8,9 +8,9 @@ class Tape {
     this.currentPosition = 0;
     this.currentPlaybackRate = 1;
     this.startTime;
-    this.warbleCycle = false;
-    this.warbleDepth = 0.02;
-    this.warbleSpeed = 50;
+    this.warbleCycle = false; //on-off switch for square wave warble
+    this.warbleDepth = 0.03;
+    this.warbleSpeed = 20; //in Hz
 
     //
     //DOM OBJECTS
@@ -164,7 +164,7 @@ class Tape {
       this.source.connect(context.destination);
       this.source.start(context.currentTime, this.currentPosition);
       this.startTime = context.currentTime;
-      this.warble();
+      this.warble('sine');
     console.log('current position:' + this.currentPosition);
     }
     else if (buffer === this.revBuffer) { //If playing backwards
@@ -190,20 +190,29 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
-  warble() {
-    this.warbleTimeout = setTimeout(() => {
-      if (this.warbleCycle) { 
-        this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
-        this.warbleCycle = false;
-        this.warble();
-        console.log('sup');
-      }
-      else {
-        this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
-        this.warbleCycle = true;
-        this.warble();
-        console.log('yo');
-      }
-    }, this.warbleSpeed);
+  warble(shape) {
+    if (shape === 'square') {
+      this.warbleTimeout = setTimeout(() => {
+        if (this.warbleCycle) { 
+          this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
+          this.warbleCycle = false;
+          this.warble('square');
+          console.log('sup');
+        }
+        else {
+          this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
+          this.warbleCycle = true;
+          this.warble('square');
+          console.log('yo');
+        }
+      }, 1000 / this.warbleSpeed);
+    }
+    else if (shape === 'sine') {
+      this.warbleTimeout = setTimeout(() => {
+        //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
+        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * this.warbleDepth;
+        this.warble('sine');
+      }, this.warbleSpeed);
+    }
   }
 }
