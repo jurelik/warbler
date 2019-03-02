@@ -10,7 +10,7 @@ class Tape {
     this.startTime;
     this.warbleCycle = false; //on-off switch for square wave warble
     this.warbleDepth = 0.03;
-    this.warbleSpeed = 20; //in Hz
+    this.warbleSpeed = 10; //in Hz
 
     //
     //DOM OBJECTS
@@ -190,6 +190,10 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
+  randomFlux() {
+    return Math.random() * 0.05;
+  }
+
   warble(shape) {
     if (shape === 'square') {
       this.warbleTimeout = setTimeout(() => {
@@ -210,7 +214,7 @@ class Tape {
     else if (shape === 'sine') {
       this.warbleTimeout = setTimeout(() => {
         //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
-        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * this.warbleDepth;
+        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin((this.warbleSpeed + this.randomFlux()) * Math.PI * context.currentTime) * (this.warbleDepth + this.randomFlux());
         this.warble('sine');
       }, this.warbleSpeed);
     }
