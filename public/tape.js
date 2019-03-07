@@ -191,30 +191,36 @@ class Tape {
   }
 
   randomFlux() {
-    return Math.random() * 4 - 2;
+    return Math.random() * 0.06 - 0.03;
   }
 
   warble(shape) {
     if (shape === 'square') {
       this.warbleTimeout = setTimeout(() => {
         if (this.warbleCycle) { 
-          this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth + this.randomFlux();
+          this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
           this.warbleCycle = false;
           this.warble('square');
         }
         else {
-          this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth - this.randomFlux();
+          this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
           this.warbleCycle = true;
           this.warble('square');
         }
-      }, 1000 / (this.warbleSpeed + this.randomFlux()));
+      }, 1000 / this.warbleSpeed);
     }
     else if (shape === 'sine') {
       this.warbleTimeout = setTimeout(() => {
         //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
-        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin((this.warbleSpeed + this.randomFlux()) * Math.PI * context.currentTime) * (this.warbleDepth);
+        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth);
         this.warble('sine');
       }, 100);
+    }
+    else if (shape === 'random') {
+      this.warbleTimeout = setTimeout(() => {
+        this.source.playbackRate.value = this.currentPlaybackRate + this.randomFlux();
+        this.warble('random');
+      }, 1000 / this.warbleSpeed); 
     }
   }
 }
