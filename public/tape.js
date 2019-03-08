@@ -8,9 +8,11 @@ class Tape {
     this.currentPosition = 0;
     this.currentPlaybackRate = 1;
     this.startTime;
-    this.warbleCycle = false; //on-off switch for square wave warble
-    this.warbleDepth = 0.03;
-    this.warbleSpeed = 10; //in Hz
+    this.warbleTimeout;
+    this.wowDepth = 0.03;
+    this.wowSpeed = 2; //in Hz
+    this.flutterDepth = 0.03;
+    this.flutterSpeed = 20 //in Hz
 
     //
     //DOM OBJECTS
@@ -149,22 +151,39 @@ class Tape {
       });
       context.decodeAudioData(reverse, decoded => { //Decode and reverse channel data
         this.revBuffer = decoded;
+        if (this.revBuffer.numberOfChannels === 1) {
+          this.revBuffer.getChannelData(0).reverse();
+        }
+        else if (this.revBuffer.numberOfChannels === 2) {
         this.revBuffer.getChannelData(0).reverse();
         this.revBuffer.getChannelData(1).reverse();
+        }
+        else {
+          console.error('Error: Something went wrong when decoding audio');
+        }
       });
     });
   }
 
   play(buffer) {
     if (buffer === this.buffer) { //If playing forward
+      const that = this;
       this.source = context.createBufferSource();
       this.source.buffer = buffer;
       this.currentPlaybackRate = 1;
       this.source.playbackRate.value = this.currentPlaybackRate;
       this.source.connect(context.destination);
       this.source.start(context.currentTime, this.currentPosition);
-      this.startTime = context.currentTime;
-      this.warble('sine');
+      this.startTime = context.currentTime; //Keep track of when play was pressed
+      
+      // this.source.onended = function() {
+      //   clearTimeout(this.warbleTimeout);
+      //   that.currentPosition = 0;
+      //   that.playing = false;
+      //   that.playBtnIcon.className = "fas fa-play";
+      // }
+
+      this.warble();
     console.log('current position:' + this.currentPosition);
     }
     else if (buffer === this.revBuffer) { //If playing backwards
@@ -190,37 +209,50 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
-  randomFlux() {
-    return Math.random() * 0.06 - 0.03;
+  randomFlutter() {
+    return Math.random() * (2 * this.flutterDepth) - this.flutterDepth;
   }
 
-  warble(shape) {
-    if (shape === 'square') {
-      this.warbleTimeout = setTimeout(() => {
-        if (this.warbleCycle) { 
-          this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
-          this.warbleCycle = false;
-          this.warble('square');
-        }
-        else {
-          this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
-          this.warbleCycle = true;
-          this.warble('square');
-        }
-      }, 1000 / this.warbleSpeed);
-    }
-    else if (shape === 'sine') {
-      this.warbleTimeout = setTimeout(() => {
-        //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
-        this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth);
-        this.warble('sine');
-      }, 100);
-    }
-    else if (shape === 'random') {
-      this.warbleTimeout = setTimeout(() => {
-        this.source.playbackRate.value = this.currentPlaybackRate + this.randomFlux();
-        this.warble('random');
-      }, 1000 / this.warbleSpeed); 
-    }
+  warble() {
+    this.warbleTimeout = setTimeout(() => {
+      this.source.playbackRate.value = this.currentPlaybackRate + (this.wowDepth + this.randomFlutter()) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
+      this.warble();
+    }, 1000 / this.flutterSpeed);
   }
+
+  // warble(shape) {
+  //   if (shape === 'square') {
+  //     this.warbleTimeout = setTimeout(() => {
+  //       if (this.warbleCycle) { 
+  //         this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
+  //         this.warbleCycle = false;
+  //         this.warble('square');
+  //       }
+  //       else {
+  //         this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
+  //         this.warbleCycle = true;
+  //         this.warble('square');
+  //       }
+  //     }, 1000 / this.warbleSpeed);
+  //   }
+  //   else if (shape === 'sine') {
+  //     this.warbleTimeout = setTimeout(() => {
+  //       //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
+  //       this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth);
+  //       this.warble('sine');
+  //     }, 100);
+  //   }
+  //   else if (shape === 'random') {
+  //     this.warbleTimeout = setTimeout(() => {
+  //       this.source.playbackRate.value = this.currentPlaybackRate + this.randomFlux();
+  //       this.warble('random');
+  //     }, 1000 / this.warbleSpeed); 
+  //   }
+  //   else if (shape === 'sinerandom') {
+  //     this.warbleTimeout = setTimeout(() => {
+  //       this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth + this.randomFlux());
+  //       this.warble('sinerandom');
+  //     }, 50)
+  //   }
+  // }
 }
