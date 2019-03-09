@@ -131,6 +131,20 @@ class Tape {
         console.error('Error: No sound loaded')
       }
     });
+
+    //Wow Depth Slider
+    this.wowDepthSlider = document.getElementById('wow-depth');
+    this.wowDepthSlider.addEventListener('input', () => {
+      console.log(this.wowDepthSlider.value);
+      this.wowDepth = parseFloat(this.wowDepthSlider.value);
+    });
+
+    //Wow Speed Slider
+    this.wowSpeedSlider = document.getElementById('wow-speed');
+    this.wowSpeedSlider.addEventListener('input', () => {
+      console.log(this.wowSpeedSlider.value);
+      this.wowSpeed = this.wowSpeedSlider.value;
+    });
   }
 
   //
@@ -147,6 +161,7 @@ class Tape {
       context.decodeAudioData(res, decoded => {
         this.buffer = decoded;
         this.duration = this.buffer.duration;
+        console.log(this.buffer);
         console.log('download complete');
       });
       context.decodeAudioData(reverse, decoded => { //Decode and reverse channel data
@@ -167,7 +182,6 @@ class Tape {
 
   play(buffer) {
     if (buffer === this.buffer) { //If playing forward
-      const that = this;
       this.source = context.createBufferSource();
       this.source.buffer = buffer;
       this.currentPlaybackRate = 1;
@@ -176,15 +190,20 @@ class Tape {
       this.source.start(context.currentTime, this.currentPosition);
       this.startTime = context.currentTime; //Keep track of when play was pressed
       
-      // this.source.onended = function() {
-      //   clearTimeout(this.warbleTimeout);
-      //   that.currentPosition = 0;
-      //   that.playing = false;
-      //   that.playBtnIcon.className = "fas fa-play";
-      // }
+      this.source.onended = function() { //In case song comes to an end
+        this.updatePosition();
+        if (this.currentPosition >= this.buffer.duration - 0.01) {
+          console.log(this.currentPosition);
+          console.log('ended');
+          clearTimeout(this.warbleTimeout);
+          this.currentPosition = 0;
+          this.playing = false;
+          this.playBtnIcon.className = "fas fa-play";
+        }
+      }.bind(this);
 
       this.warble();
-    console.log('current position:' + this.currentPosition);
+      console.log('current position:' + this.currentPosition);
     }
     else if (buffer === this.revBuffer) { //If playing backwards
       this.source = context.createBufferSource();
@@ -200,8 +219,7 @@ class Tape {
   pause() {
     this.source.stop();
     clearTimeout(this.warbleTimeout);
-    this.updatePosition();
-    console.log(this.currentPosition);
+    // this.updatePosition();
   }
 
   //Responsible for updating the global currentPosition value, needed to track position in song
@@ -215,9 +233,9 @@ class Tape {
 
   warble() {
     this.warbleTimeout = setTimeout(() => {
-      this.source.playbackRate.value = this.currentPlaybackRate + (this.wowDepth + this.randomFlutter()) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
+      this.source.playbackRate.value = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
       this.warble();
-    }, 1000 / this.flutterSpeed);
+    }, 5);
   }
 
   // warble(shape) {

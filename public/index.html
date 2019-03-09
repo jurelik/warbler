@@ -13,11 +13,24 @@
 <body>
   <main>
     <div id="main">
-      <button class="tape-button" id="rewind-full"><i class="fas fa-fast-backward"></i></button>
-      <button class="tape-button" id="rewind"><i class="fas fa-backward"></i></button>
-      <button class="tape-button" id="play-pause"><i class="fas fa-play" id="play-pause-icon"></i></button>
-      <button class="tape-button" id="forward"><i class="fas fa-forward"></i></button>
-      <!-- <button class="tape-button" id="forward-full"><i class="fas fa-fast-forward"></i></button> -->
+      <form>
+        <fieldset>
+          <legend>Warbler Controls</legend>
+          <label for="wow-depth">
+            wow depth: <input type="range" id="wow-depth" min="0.01" max="0.1" step="0.01">
+          </label>
+          <label for="wow-speed">
+            wow speed: <input type="range" id="wow-speed" min="0.5" max="10" step="0.01">
+          </label>
+        </fieldset>
+      </form>
+      <div>
+        <button class="tape-button" id="rewind-full"><i class="fas fa-fast-backward"></i></button>
+        <button class="tape-button" id="rewind"><i class="fas fa-backward"></i></button>
+        <button class="tape-button" id="play-pause"><i class="fas fa-play" id="play-pause-icon"></i></button>
+        <button class="tape-button" id="forward"><i class="fas fa-forward"></i></button>
+        <!-- <button class="tape-button" id="forward-full"><i class="fas fa-fast-forward"></i></button> -->
+      </div> 
     </div>
   </main>
 </body>
