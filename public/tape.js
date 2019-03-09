@@ -7,12 +7,13 @@ class Tape {
     this.duration;
     this.currentPosition = 0;
     this.currentPlaybackRate = 1;
+    this.currentWowPosition;
     this.startTime;
     this.warbleTimeout;
-    this.wowDepth = 0.03;
-    this.wowSpeed = 2; //in Hz
-    this.flutterDepth = 0.03;
-    this.flutterSpeed = 20 //in Hz
+    this.wowDepth = 0;
+    this.wowSpeed = 0; //in Hz
+    this.flutterDepth = 0;
+    this.flutterSpeed = 0; //in Hz
 
     //
     //DOM OBJECTS
@@ -136,7 +137,7 @@ class Tape {
     this.wowDepthSlider = document.getElementById('wow-depth');
     this.wowDepthSlider.addEventListener('input', () => {
       console.log(this.wowDepthSlider.value);
-      this.wowDepth = parseFloat(this.wowDepthSlider.value);
+      this.wowDepth = this.wowDepthSlider.value;
     });
 
     //Wow Speed Slider
@@ -144,6 +145,18 @@ class Tape {
     this.wowSpeedSlider.addEventListener('input', () => {
       console.log(this.wowSpeedSlider.value);
       this.wowSpeed = this.wowSpeedSlider.value;
+    });
+
+    //Flutter Depth Slider
+    this.flutterDepthSlider = document.getElementById('flutter-depth');
+    this.flutterDepthSlider.addEventListener('input', () => {
+      this.flutterDepth = this.flutterDepthSlider.value;
+    });
+
+    //Flutter Speed Slider
+    this.flutterSpeedSlider = document.getElementById('flutter-speed');
+    this.flutterSpeedSlider.addEventListener('input', () => {
+      this.flutterSpeed = this.flutterSpeedSlider.value;
     });
   }
 
@@ -203,6 +216,7 @@ class Tape {
       }.bind(this);
 
       this.warble();
+      this.flutter();
       console.log('current position:' + this.currentPosition);
     }
     else if (buffer === this.revBuffer) { //If playing backwards
@@ -233,9 +247,17 @@ class Tape {
 
   warble() {
     this.warbleTimeout = setTimeout(() => {
-      this.source.playbackRate.value = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
+      this.currentWowPosition = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
+      this.source.playbackRate.value = this.currentWowPosition;
       this.warble();
     }, 5);
+  }
+
+  flutter() {
+    this.flutterTimeout = setTimeout(() => {
+      this.source.playbackRate.value = this.currentWowPosition + this.randomFlutter();
+      this.flutter();
+    }, 1000 / this.flutterSpeed);
   }
 
   // warble(shape) {
