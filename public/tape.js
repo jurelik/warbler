@@ -9,7 +9,8 @@ class Tape {
     this.currentPlaybackRate = 1;
     this.currentWowPosition;
     this.startTime;
-    this.warbleTimeout;
+    this.wowTimeout;
+    this.flutterTimeout;
     this.wowDepth = 0;
     this.wowSpeed = 0; //in Hz
     this.flutterDepth = 0;
@@ -66,7 +67,7 @@ class Tape {
       }
       else if (!this.playing && this.buffer != null) { //If song is not playing
         this.source.stop();
-        clearTimeout(this.warbleTimeout);
+        clearTimeout(this.wowTimeout);
         this.currentPosition += (context.currentTime - this.mouseDownTime) * 1.5;
       }
       else { //If no song is loaded
@@ -79,7 +80,7 @@ class Tape {
     this.rewindBtn.addEventListener('mousedown', () => {
       if (this.playing && this.buffer != null) { //If song is playing
         this.source.stop();
-        clearTimeout(this.warbleTimeout);
+        clearTimeout(this.wowTimeout);
         this.updatePosition(); //Updates the position until this moment
         this.play(this.revBuffer);
         this.currentPlaybackRate = 1.5;
@@ -208,14 +209,14 @@ class Tape {
         if (this.currentPosition >= this.buffer.duration - 0.01) {
           console.log(this.currentPosition);
           console.log('ended');
-          clearTimeout(this.warbleTimeout);
+          clearTimeout(this.wowTimeout);
           this.currentPosition = 0;
           this.playing = false;
           this.playBtnIcon.className = "fas fa-play";
         }
       }.bind(this);
 
-      this.warble();
+      this.wow();
       this.flutter();
       console.log('current position:' + this.currentPosition);
     }
@@ -232,7 +233,7 @@ class Tape {
 
   pause() {
     this.source.stop();
-    clearTimeout(this.warbleTimeout);
+    clearTimeout(this.wowTimeout);
     // this.updatePosition();
   }
 
@@ -245,11 +246,11 @@ class Tape {
     return Math.random() * (2 * this.flutterDepth) - this.flutterDepth;
   }
 
-  warble() {
-    this.warbleTimeout = setTimeout(() => {
+  wow() {
+    this.wowTimeout = setTimeout(() => {
       this.currentWowPosition = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
       this.source.playbackRate.value = this.currentWowPosition;
-      this.warble();
+      this.wow();
     }, 5);
   }
 
