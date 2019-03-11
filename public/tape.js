@@ -1,19 +1,19 @@
 class Tape {
   constructor() {
-    this.buffer;
-    this.revBuffer;
-    this.source;
-    this.playing = false;
-    this.duration;
-    this.currentPosition = 0;
-    this.currentPlaybackRate = 1;
-    this.currentWowPosition;
-    this.startTime;
-    this.wowTimeout;
-    this.flutterTimeout;
-    this.wowDepth = 0;
+    this.buffer; //buffer for the loaded song
+    this.revBuffer; //reversed buffer for the loaded song
+    this.source; //buffer source global variable
+    this.playing = false; //playing status
+    this.duration; //song lengths in seconds
+    this.currentPosition = 0; //current position of song in seconds
+    this.currentPlaybackRate = 1; //speed of playback
+    this.currentWowPosition; //keeps track of how the wow changes the playbackRate
+    this.startTime; //updates whenever the play() method is called
+    this.wowTimeout; //setTimeout for the wow() method
+    this.flutterTimeout; //setTimout for the flutter method
+    this.wowDepth = 0; //amount of wow
     this.wowSpeed = 0; //in Hz
-    this.flutterDepth = 0;
+    this.flutterDepth = 0; //amount of flutter
     this.flutterSpeed = 0; //in Hz
 
     //
@@ -191,6 +191,9 @@ class Tape {
           console.error('Error: Something went wrong when decoding audio');
         }
       });
+    })
+    .catch(error => {
+      console.error(error);
     });
   }
 
@@ -232,9 +235,14 @@ class Tape {
   }
 
   pause() {
-    this.source.stop();
-    clearTimeout(this.wowTimeout);
-    // this.updatePosition();
+    if (this.playing) {
+      this.source.stop();
+      clearTimeout(this.wowTimeout);
+      clearTimeout(flutterTimeout);
+    }
+    else {
+      console.error('Error: Nothing is playing');
+    }
   }
 
   //Responsible for updating the global currentPosition value, needed to track position in song
@@ -260,40 +268,4 @@ class Tape {
       this.flutter();
     }, 1000 / this.flutterSpeed);
   }
-
-  // warble(shape) {
-  //   if (shape === 'square') {
-  //     this.warbleTimeout = setTimeout(() => {
-  //       if (this.warbleCycle) { 
-  //         this.source.playbackRate.value = this.currentPlaybackRate + this.warbleDepth;
-  //         this.warbleCycle = false;
-  //         this.warble('square');
-  //       }
-  //       else {
-  //         this.source.playbackRate.value = this.currentPlaybackRate - this.warbleDepth;
-  //         this.warbleCycle = true;
-  //         this.warble('square');
-  //       }
-  //     }, 1000 / this.warbleSpeed);
-  //   }
-  //   else if (shape === 'sine') {
-  //     this.warbleTimeout = setTimeout(() => {
-  //       //sin('rate in Hz' * 'pi' * 'current time') * 'amplitude aka warble depth'
-  //       this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth);
-  //       this.warble('sine');
-  //     }, 100);
-  //   }
-  //   else if (shape === 'random') {
-  //     this.warbleTimeout = setTimeout(() => {
-  //       this.source.playbackRate.value = this.currentPlaybackRate + this.randomFlux();
-  //       this.warble('random');
-  //     }, 1000 / this.warbleSpeed); 
-  //   }
-  //   else if (shape === 'sinerandom') {
-  //     this.warbleTimeout = setTimeout(() => {
-  //       this.source.playbackRate.value = this.currentPlaybackRate + Math.sin(this.warbleSpeed * Math.PI * context.currentTime) * (this.warbleDepth + this.randomFlux());
-  //       this.warble('sinerandom');
-  //     }, 50)
-  //   }
-  // }
 }

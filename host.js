@@ -6,7 +6,6 @@ const ytdl = require('ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
 
 ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
-
 const server = express();
 
 server.use(express.static('./public'));
