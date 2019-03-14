@@ -7,7 +7,7 @@ class Tape {
     this.duration; //song lengths in seconds
     this.currentPosition = 0; //current position of song in seconds
     this.currentPlaybackRate = 1; //speed of playback
-    this.currentWowPosition; //keeps track of how the wow changes the playbackRate
+    this.currentWowPosition = 0; //keeps track of how the wow changes the playbackRate
     this.startTime; //updates whenever the play() method is called
     this.wowTimeout; //setTimeout for the wow() method
     this.flutterTimeout; //setTimout for the flutter method
@@ -15,6 +15,9 @@ class Tape {
     this.wowSpeed = 0; //in Hz
     this.flutterDepth = 0; //amount of flutter
     this.flutterSpeed = 0; //in Hz
+
+    this.flutterTempSpeed = 0;
+    this.flutterTempDepth = 0;
 
     //
     //DOM OBJECTS
@@ -158,6 +161,7 @@ class Tape {
     this.flutterSpeedSlider = document.getElementById('flutter-speed');
     this.flutterSpeedSlider.addEventListener('input', () => {
       this.flutterSpeed = this.flutterSpeedSlider.value;
+      console.log(this.flutterSpeedSlider.value);
     });
   }
 
@@ -238,7 +242,7 @@ class Tape {
     if (this.playing) {
       this.source.stop();
       clearTimeout(this.wowTimeout);
-      clearTimeout(flutterTimeout);
+      clearTimeout(this.flutterTimeout);
     }
     else {
       console.error('Error: Nothing is playing');
@@ -250,22 +254,44 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
-  randomFlutter() {
+  randomFlutterDepth() {
     return Math.random() * (2 * this.flutterDepth) - this.flutterDepth;
+  }
+
+  randomFlutterSpeed() {
+    let random = this.flutterSpeed + (Math.random() * (2* this.flutterSpeed) - this.flutterSpeed);
+    console.log(random);
+    return random;
+  }
+
+  randomFlutterRefresh() {
+    let random = Math.abs(1000 / this.flutterTempSpeed);
+    // console.log(random);
+    return random;
   }
 
   wow() {
     this.wowTimeout = setTimeout(() => {
-      this.currentWowPosition = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime);
+      this.currentWowPosition = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime) + this.flutterTempDepth * Math.sin(this.flutterTempSpeed * Math.PI * context.currentTime);
       this.source.playbackRate.value = this.currentWowPosition;
       this.wow();
     }, 5);
   }
 
+  // flutter() {
+  //   this.flutterTimeout = setTimeout(() => {
+  //     console.log('sup');
+  //     this.source.playbackRate.value = this.currentWowPosition + this.randomFlutterDepth() * Math.sin(this.randomFlutterSpeed() * Math.PI * context.currentTime);
+  //     this.flutter();
+  //   }, 1000 / this.randomFlutterSpeed());
+  // }
+
   flutter() {
     this.flutterTimeout = setTimeout(() => {
-      this.source.playbackRate.value = this.currentWowPosition + this.randomFlutter();
+      this.flutterTempDepth = this.randomFlutterDepth();
+      this.flutterTempSpeed = this.randomFlutterSpeed();
       this.flutter();
-    }, 1000 / this.flutterSpeed);
+    }, this.randomFlutterRefresh());
   }
+  
 }
