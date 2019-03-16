@@ -7,7 +7,6 @@ class Tape {
     this.duration; //song lengths in seconds
     this.currentPosition = 0; //current position of song in seconds
     this.currentPlaybackRate = 1; //speed of playback
-    this.currentWowPosition = 0; //keeps track of how the wow changes the playbackRate
     this.startTime; //updates whenever the play() method is called
     this.wowTimeout; //setTimeout for the wow() method
     this.flutterTimeout; //setTimout for the flutter method
@@ -15,6 +14,17 @@ class Tape {
     this.wowSpeed = 0; //in Hz
     this.flutterAmount = 0; //amount of flutter
     this.flutterSine = 0; //sine function of flutter
+    this.compressorState = false;
+
+    //
+    //AUDIO NODES
+    //
+
+    this.compressor = context.createDynamicsCompressor();
+    this.compressor.threshold.value = -30;
+    this.compressor.ratio.value = 12;
+    this.compressor.attack.value = 0.1;
+    this.compressor.release.value = 0.02;
 
     //
     //DOM OBJECTS
@@ -197,7 +207,12 @@ class Tape {
       this.source.buffer = buffer;
       this.currentPlaybackRate = 1;
       this.source.playbackRate.value = this.currentPlaybackRate;
-      this.source.connect(context.destination);
+      if (!this.compressorState) {
+        this.source.connect(context.destination);
+      }
+      else {
+        this.source.connect(this.compressor);
+      }
       this.source.start(context.currentTime, this.currentPosition);
       this.startTime = context.currentTime; //Keep track of when play was pressed
       
@@ -220,7 +235,13 @@ class Tape {
     else if (buffer === this.revBuffer) { //If playing backwards
       this.source = context.createBufferSource();
       this.source.buffer = buffer;
-      this.source.connect(context.destination);
+      if (!this.compressorState) {
+        this.source.connect(context.destination);
+      }
+      else {
+        this.source.connect(this.compressor);
+      }
+      
       this.source.start(context.currentTime, this.duration - this.currentPosition);
     }
     else {
@@ -244,6 +265,22 @@ class Tape {
     this.currentPosition += context.currentTime - this.startTime;
   }
 
+  //Wow effect
+  wow() {
+    this.wowTimeout = setTimeout(() => {
+      this.source.playbackRate.value = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime) + this.flutterSine;
+      this.wow();
+    }, 5);
+  }
+
+  //Flutter effect
+  flutter() {
+    this.flutterTimeout = setTimeout(() => {
+      this.flutterSine = this.randomFlutterDepth() * Math.sin(this.randomFlutterSpeed() * Math.PI * context.currentTime);
+      this.flutter();
+    }, 1000 / this.randomFlutterChange());
+  }
+
   randomFlutterChange() {
     return Math.random() * 20 + 20;
   }
@@ -256,19 +293,19 @@ class Tape {
     return Math.random() * 190 + 10;
   }
 
-  wow() {
-    this.wowTimeout = setTimeout(() => {
-      this.currentWowPosition = this.currentPlaybackRate + (this.wowDepth) * Math.sin(this.wowSpeed * Math.PI * context.currentTime) + this.flutterSine;
-      this.source.playbackRate.value = this.currentWowPosition;
-      this.wow();
-    }, 5);
-  }
-
-  flutter() {
-    this.flutterTimeout = setTimeout(() => {
-      this.flutterSine = this.randomFlutterDepth() * Math.sin(this.randomFlutterSpeed() * Math.PI * context.currentTime);
-      this.flutter();
-    }, 1000 / this.randomFlutterChange());
+  //Compressor Toggle
+  compressorToggle() {
+    if (!this.compressorState && this.playing) {
+      this.source.disconnect(context.destination);
+      this.source.connect(this.compressor);
+      this.compressor.connect(context.destination);
+      this.compressorState = true;
+    }
+    else if (this.compressorState && this.playing) {
+      this.source.disconnect(this.compressor);
+      this.source.connect(context.destination);
+      this.compressorState = false;
+    }
   }
   
 }
