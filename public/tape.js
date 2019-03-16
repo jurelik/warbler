@@ -15,6 +15,7 @@ class Tape {
     this.flutterAmount = 0; //amount of flutter
     this.flutterSine = 0; //sine function of flutter
     this.compressorState = false;
+    this.reverseState = false;
 
     //
     //AUDIO NODES
@@ -207,6 +208,7 @@ class Tape {
       this.source.buffer = buffer;
       this.currentPlaybackRate = 1;
       this.source.playbackRate.value = this.currentPlaybackRate;
+      this.reverseState = false;
       if (!this.compressorState) {
         this.source.connect(context.destination);
       }
@@ -217,14 +219,16 @@ class Tape {
       this.startTime = context.currentTime; //Keep track of when play was pressed
       
       this.source.onended = function() { //In case song comes to an end
-        this.updatePosition();
-        if (this.currentPosition >= this.buffer.duration - 0.01) {
-          console.log(this.currentPosition);
-          console.log('ended');
-          clearTimeout(this.wowTimeout);
-          this.currentPosition = 0;
-          this.playing = false;
-          this.playBtnIcon.className = "fas fa-play";
+        if(!this.reverseState) { //Only do this if song is playing forwards
+          this.updatePosition();
+          if (this.currentPosition >= this.buffer.duration - 0.01) {
+            console.log(this.currentPosition);
+            console.log('ended');
+            clearTimeout(this.wowTimeout);
+            this.currentPosition = 0;
+            this.playing = false;
+            this.playBtnIcon.className = "fas fa-play";
+          }
         }
       }.bind(this);
 
@@ -235,6 +239,8 @@ class Tape {
     else if (buffer === this.revBuffer) { //If playing backwards
       this.source = context.createBufferSource();
       this.source.buffer = buffer;
+      this.reverseState = true;
+
       if (!this.compressorState) {
         this.source.connect(context.destination);
       }
