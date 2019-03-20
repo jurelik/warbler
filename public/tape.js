@@ -27,6 +27,10 @@ class Tape {
     this.compressor.attack.value = 0.1;
     this.compressor.release.value = 0.02;
 
+    this.lowpassFilter = context.createBiquadFilter();
+    this.lowpassFilter.type = "lowpass";
+    this.lowpassFilter.frequency.value = 5000;
+
     //
     //DOM OBJECTS
     //
@@ -304,7 +308,8 @@ class Tape {
     if (!this.compressorState && this.playing) {
       this.source.disconnect(context.destination);
       this.source.connect(this.compressor);
-      this.compressor.connect(context.destination);
+      this.compressor.connect(this.lowpassFilter);
+      this.lowpassFilter.connect(context.destination);
       this.compressorState = true;
     }
     else if (this.compressorState && this.playing) {
