@@ -14,18 +14,23 @@ server.get('/download/:id', (req, res) => {
   const id = req.params.id;
   let stream = ytdl(`https://www.youtube.com/watch?v=${id}`);
 
+  stream.on('error', err => {
+    console.log(err.message);
+    res.status(400).send(err.message);
+  });
+
   ffmpeg(stream)
-    .audioCodec('libmp3lame')
-    .audioBitrate(128)
-    .toFormat('mp3')
-    .save(`public/downloads/${id}.mp3`)
-    .on('error', err => {
-      console.log(err);
-    })
-    .on('end', () => {
-      console.log('file downloaded');
-      send(req, `public/downloads/${id}.mp3`).pipe(res);
-    });
+  .audioCodec('libmp3lame')
+  .audioBitrate(128)
+  .toFormat('mp3')
+  .save(`public/downloads/${id}.mp3`)
+  .on('error', err => {
+    console.log(err.message);
+  })
+  .on('end', () => {
+    console.log('file downloaded');
+    send(req, `public/downloads/${id}.mp3`).pipe(res);
+  });
 });
 
 server.listen(3000, () => {

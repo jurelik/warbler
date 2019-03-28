@@ -175,34 +175,45 @@ class Tape {
   //
 
   load(id) {
+    let error;
     fetch(`http://localhost:3000/download/${id}`)
     .then((res) => {
-      return res.arrayBuffer();
+      if (res.ok) { //Check if there was an error on the server
+        return res.arrayBuffer(); //If not, continue as planned
+      }
+      else {
+        return res.text(); //Else, server sends an error message that needs to be sent forward
+      } 
     })
     .then(res => {
-      let reverse = res.slice(); //Making a copy of the array buffer in order to store a reverse version
-      context.decodeAudioData(res, decoded => {
-        this.buffer = decoded;
-        this.duration = this.buffer.duration;
-        console.log(this.buffer);
-        console.log('download complete');
-      });
-      context.decodeAudioData(reverse, decoded => { //Decode and reverse channel data
-        this.revBuffer = decoded;
-        if (this.revBuffer.numberOfChannels === 1) {
+      if (typeof res != 'string') { // Check if the response is a string (meaning there was an error)
+        let reverse = res.slice(); //Making a copy of the array buffer in order to store a reverse version
+        context.decodeAudioData(res, decoded => {
+          this.buffer = decoded;
+          this.duration = this.buffer.duration;
+          console.log(this.buffer);
+          console.log('download complete');
+        });
+        context.decodeAudioData(reverse, decoded => { //Decode and reverse channel data
+          this.revBuffer = decoded;
+          if (this.revBuffer.numberOfChannels === 1) {
+            this.revBuffer.getChannelData(0).reverse();
+          }
+          else if (this.revBuffer.numberOfChannels === 2) {
           this.revBuffer.getChannelData(0).reverse();
-        }
-        else if (this.revBuffer.numberOfChannels === 2) {
-        this.revBuffer.getChannelData(0).reverse();
-        this.revBuffer.getChannelData(1).reverse();
-        }
-        else {
-          console.error('Error: Something went wrong when decoding audio');
-        }
-      });
+          this.revBuffer.getChannelData(1).reverse();
+          }
+          else {
+            console.error('Error: Something went wrong when decoding audio');
+          }
+        });
+      }
+      else {
+        throw new Error(res);
+      }  
     })
-    .catch(error => {
-      console.error(error);
+    .catch(err => {
+      console.log(err.message);
     });
   }
 
