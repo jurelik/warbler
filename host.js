@@ -12,25 +12,34 @@ server.use(express.static('./public'));
 
 server.get('/download/:id', (req, res) => {
   const id = req.params.id;
+  let title = 'poop';
   let stream = ytdl(`https://www.youtube.com/watch?v=${id}`);
+  ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, (err, info) => {
+    if (err) {
+      console.log(err.message);
+      res.status(400).end(err.message);
+    }
+    else {
+      ffmpeg(stream)
+      .audioCodec('libmp3lame')
+      .audioBitrate(128)
+      .toFormat('mp3')
+      .save(`public/downloads/${info.title}.mp3`)
+      .on('error', err => {
+        console.log(err.message);
+      })
+      .on('end', () => {
+        console.log('file downloaded');
+        send(req, `public/downloads/${info.title}.mp3`).pipe(res);
+      });
+    }   
+  });
 
   stream.on('error', err => {
     console.log(err.message);
-    res.status(400).send(err.message);
+    res.status(400).end(err.message);
   });
 
-  ffmpeg(stream)
-  .audioCodec('libmp3lame')
-  .audioBitrate(128)
-  .toFormat('mp3')
-  .save(`public/downloads/${id}.mp3`)
-  .on('error', err => {
-    console.log(err.message);
-  })
-  .on('end', () => {
-    console.log('file downloaded');
-    send(req, `public/downloads/${id}.mp3`).pipe(res);
-  });
 });
 
 server.listen(3000, () => {

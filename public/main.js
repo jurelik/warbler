@@ -4,6 +4,6 @@ const context = new AudioContext();
 let tape = new Tape();
 
 function testRegex(id) {
-  let split = id.split('v=');
-  console.log(split[1]);
+  let string = id.split('v=');
+  console.log(string);
 }

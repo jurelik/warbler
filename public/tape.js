@@ -174,8 +174,9 @@ class Tape {
   //METHODS
   //
 
-  load(id) {
-    let error;
+  load(url) {
+    let id = this.getVideoId(url);
+
     fetch(`http://localhost:3000/download/${id}`)
     .then((res) => {
       if (res.ok) { //Check if there was an error on the server
@@ -213,7 +214,7 @@ class Tape {
       }  
     })
     .catch(err => {
-      console.log(err.message);
+      console.error(err.message);
     });
   }
 
@@ -328,6 +329,15 @@ class Tape {
       this.source.connect(context.destination);
       this.compressorState = false;
     }
+  }
+
+  getVideoId(url) { //get ID from youtube video URL
+    const regex = /^[\w\-]{11}/;
+    const split = url.split('watch?v=')[1];
+    const id = split.match(regex)[0];
+
+    console.log(id);
+    return id;
   }
   
 }
