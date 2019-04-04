@@ -12,14 +12,10 @@ server.use(express.static('./public'));
 
 server.get('/download/:id', (req, res) => {
   const id = req.params.id;
-  let title = 'poop';
   let stream = ytdl(`https://www.youtube.com/watch?v=${id}`);
+  
   ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, (err, info) => {
-    if (err) {
-      console.log(err.message);
-      res.status(400).end(err.message);
-    }
-    else {
+    if (!err) {
       ffmpeg(stream)
       .audioCodec('libmp3lame')
       .audioBitrate(128)
@@ -32,10 +28,14 @@ server.get('/download/:id', (req, res) => {
         console.log('file downloaded');
         send(req, `public/downloads/${info.title}.mp3`).pipe(res);
       });
+    }
+    else { //Error handler
+      console.log(err.message);
+      res.status(400).end(err.message);
     }   
   });
 
-  stream.on('error', err => {
+  stream.on('error', err => { //Error handler
     console.log(err.message);
     res.status(400).end(err.message);
   });
