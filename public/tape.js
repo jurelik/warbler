@@ -168,6 +168,15 @@ class Tape {
     this.flutterSlider.addEventListener('input', () => {
       this.flutterAmount = this.flutterSlider.value;
     });
+
+    //Youtube URL Form
+    this.ytForm = document.getElementById('yt-form');
+    this.ytForm.addEventListener('submit', e => {
+      e.preventDefault();
+      let ytURL = document.getElementById('yt-url').value;
+      this.load(ytURL);
+      return false;
+    });
   }
 
   //
