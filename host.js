@@ -5,6 +5,8 @@ const send = require('send');
 const ytdl = require('ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
 
+const retainFileTime = 10000; //How long to keep the file on the server in ms
+
 ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg');
 const server = express();
 
@@ -15,7 +17,16 @@ server.get('/download/:id', (req, res) => {
   let stream = ytdl(`https://www.youtube.com/watch?v=${id}`);
   
   ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`, (err, info) => {
-    if (!err) {
+    let noRepeat = true;
+
+    fs.readdirSync('public/downloads').forEach(file => {
+      if (file === `${info.title}.mp3`) {
+        noRepeat = false;
+        send(req, `public/downloads/${info.title}.mp3`).pipe(res);
+      }
+    });
+
+    if (!err && noRepeat) {
       ffmpeg(stream)
       .audioCodec('libmp3lame')
       .audioBitrate(128)
@@ -28,6 +39,20 @@ server.get('/download/:id', (req, res) => {
         console.log('file downloaded');
         send(req, `public/downloads/${info.title}.mp3`).pipe(res);
       });
+
+      setTimeout(() => { // Delete file after x amount of time
+        fs.unlink(`public/downloads/${info.title}.mp3`, err => {
+          if(!err) {
+            console.log(`file deleted: ${info.title}.mp3`);
+          }
+          else {
+            console.log(err);
+          }
+        });
+      }, retainFileTime);
+    }
+    else if (!err && !noRepeat) {
+      console.log(`file already exists: ${info.title}.mp3`);
     }
     else { //Error handler
       console.log(err.message);
