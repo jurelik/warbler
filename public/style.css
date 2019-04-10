@@ -10,6 +10,82 @@ html, body {
   margin: 0;
   padding: 0;
 }
+/*  */
+/*  */
+/* INPUT STYLES */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; /* width required for firefox */
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+input[type=range]::ms-track {
+  width: 100%;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+/* Thumb */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: white;
+  border: 1px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 16px;
+  margin-top: -8px;
+  width: 16px;
+}
+
+input[type=range]::-moz-range-thumb {
+  background: white;
+  border: 1px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 16px;
+  width: 16px;
+}
+
+input[type=range]::-ms-thumb {
+  background: white;
+  border: 1px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 16px;
+  width: 16px;
+}
+
+/* Track */
+input[type=range]::-webkit-slider-runnable-track {
+  background: black;
+  cursor: pointer;
+  height: 1px;
+  width: 100%;
+}
+
+input[type=range]::-moz-range-track {
+  background: black;
+  cursor: pointer;
+  height: 1px;
+  width: 100%;
+}
+
+input[type=range]::-ms-track {
+  background: black;
+  cursor: pointer;
+  height: 1px;
+  width: 100%;
+}
 
 /* CLASS DEFINITIONS */
 
